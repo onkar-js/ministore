@@ -1,0 +1,6 @@
+{
+  "name": "MiniStore - DevOps & Kubernetes E-Commerce Application",
+  "description": "Beginner-friendly 3-tier shopping application with Vanilla HTML/JS, Python Flask REST API, and PostgreSQL designed for DevOps and Kubernetes learning.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

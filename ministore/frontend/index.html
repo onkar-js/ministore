@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MiniStore - Modern Cloud E-Commerce</title>
+  <meta name="description" content="Simple, beginner-friendly 3-tier shopping store built for learning Kubernetes and DevOps.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header class="navbar">
+    <div class="nav-container">
+      <a href="#" class="brand-logo" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;">
+        <span class="brand-name">MiniStore</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="#catalog" class="nav-link">Catalog</a>
+        <a href="#about" class="nav-link">Architecture</a>
+      </div>
+
+      <div class="nav-actions">
+        <!-- Health status indicator -->
+        <div id="backend-status" class="system-status" title="Checking backend health...">
+          <span class="status-indicator" id="status-bulb"></span>
+          <span class="status-text" id="status-label">Connecting</span>
+        </div>
+
+        <!-- Cart Trigger Button -->
+        <button id="cart-btn" class="cart-trigger-btn" aria-label="Open Shopping Cart">
+          <svg class="cart-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="9" cy="21" r="1"></circle>
+            <circle cx="20" cy="21" r="1"></circle>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+          </svg>
+          <span class="cart-label">Cart</span>
+          <span id="cart-count" class="cart-count-badge">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Notification Toast Container -->
+  <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+  <!-- Main Content -->
+  <main class="page-main">
+
+    <!-- Store Hero Section -->
+    <section class="hero-section">
+      <div class="hero-content">
+        <p class="hero-kicker">DevOps &amp; Cloud Native Architecture</p>
+        <h1 class="hero-headline">Simple Tools for Modern Platform Builders</h1>
+        <p class="hero-subline">
+          MiniStore is a 3-tier shopping application designed specifically for hands-on Kubernetes, Docker, and DevOps practice.
+        </p>
+        <div class="hero-actions">
+          <a href="#catalog" class="btn-primary">Browse Catalog</a>
+          <button id="test-health-btn" class="btn-secondary">Check /api/health</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Product Catalog Section -->
+    <section id="catalog" class="catalog-section">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Available Products</h2>
+          <p class="section-desc">Fetched dynamically from PostgreSQL via <code>GET /api/products</code></p>
+        </div>
+        <button id="refresh-products-btn" class="btn-refresh" title="Refresh products from database">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
+            <path d="M21 3v5h-5"></path>
+            <path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
+            <path d="M3 21v-5h5"></path>
+          </svg>
+          Refresh
+        </button>
+      </div>
+
+      <!-- Loading State -->
+      <div id="loading-spinner" class="state-container">
+        <div class="spinner"></div>
+        <p class="state-text">Loading catalog from backend API...</p>
+      </div>
+
+      <!-- Error State -->
+      <div id="catalog-error" class="state-container hidden">
+        <div class="error-box">
+          <h3 class="error-title">Unable to Load Products</h3>
+          <p id="catalog-error-msg" class="error-msg">Failed to connect to /api/products. Verify backend service is running.</p>
+          <button id="retry-fetch-btn" class="btn-primary" style="margin-top: 1rem;">Retry Connection</button>
+        </div>
+      </div>
+
+      <!-- Products Grid -->
+      <div id="products-grid" class="products-grid hidden"></div>
+    </section>
+
+    <!-- Architecture Brief Section -->
+    <section id="about" class="architecture-section">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Application Architecture</h2>
+          <p class="section-desc">How MiniStore communicates across container boundaries</p>
+        </div>
+      </div>
+
+      <div class="arch-cards-grid">
+        <div class="arch-card">
+          <div class="arch-step">01. Frontend Tier</div>
+          <h3 class="arch-title">Nginx &amp; Static Assets</h3>
+          <p class="arch-body">
+            Lightweight Nginx Alpine container serving HTML, CSS, and Vanilla JS on port 80. Proxies all <code>/api/*</code> traffic to the backend, avoiding browser CORS complications.
+          </p>
+        </div>
+
+        <div class="arch-card">
+          <div class="arch-step">02. Backend Tier</div>
+          <h3 class="arch-title">Python Flask REST API</h3>
+          <p class="arch-body">
+            Containerized Python 3.11 service exposing <code>/api/health</code>, <code>/api/products</code>, and transactional <code>/api/orders</code> on port 5000.
+          </p>
+        </div>
+
+        <div class="arch-card">
+          <div class="arch-step">03. Data Tier</div>
+          <h3 class="arch-title">PostgreSQL Database</h3>
+          <p class="arch-body">
+            Relational storage for products, orders, and order line items. Configured via standard database credentials and environment variables.
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Shopping Cart Slide-Over Drawer -->
+  <aside id="cart-drawer" class="cart-drawer" aria-hidden="true">
+    <div class="cart-drawer-header">
+      <h3 class="cart-drawer-title">Shopping Cart</h3>
+      <button id="close-cart-btn" class="close-drawer-btn" aria-label="Close cart">&times;</button>
+    </div>
+
+    <!-- Empty Cart Message -->
+    <div id="cart-empty" class="cart-empty-view">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="empty-cart-icon">
+        <circle cx="9" cy="21" r="1"></circle>
+        <circle cx="20" cy="21" r="1"></circle>
+        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+      </svg>
+      <p class="cart-empty-text">Your cart is empty</p>
+      <p class="cart-empty-sub">Add sample items from the catalog above to test the checkout flow.</p>
+    </div>
+
+    <!-- Cart Items List -->
+    <div id="cart-items" class="cart-items-list hidden"></div>
+
+    <!-- Cart Footer & Checkout Form -->
+    <div id="cart-footer" class="cart-footer hidden">
+      <div class="cart-summary">
+        <div class="summary-row">
+          <span>Subtotal</span>
+          <span id="cart-subtotal" class="tabular-nums">$0.00</span>
+        </div>
+        <div class="summary-row total-row">
+          <span>Total Amount</span>
+          <span id="cart-total" class="tabular-nums">$0.00</span>
+        </div>
+      </div>
+
+      <form id="checkout-form" class="checkout-form">
+        <h4 class="checkout-title">Customer Details</h4>
+        <div class="form-group">
+          <label for="cust-name" class="form-label">Full Name</label>
+          <input type="text" id="cust-name" class="form-input" placeholder="e.g. Jane Developer" required>
+        </div>
+
+        <div class="form-group">
+          <label for="cust-email" class="form-label">Email Address</label>
+          <input type="email" id="cust-email" class="form-input" placeholder="e.g. jane@example.com" required>
+        </div>
+
+        <button type="submit" id="checkout-submit-btn" class="btn-checkout">
+          Place Order (POST /api/orders)
+        </button>
+      </form>
+    </div>
+  </aside>
+
+  <!-- Cart Backdrop -->
+  <div id="cart-backdrop" class="drawer-backdrop hidden"></div>
+
+  <!-- Order Success Modal -->
+  <div id="order-modal" class="order-modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-icon-wrapper">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </div>
+        <h3 class="modal-title">Order Confirmed!</h3>
+        <p class="modal-subtitle">Saved directly to PostgreSQL via <code>POST /api/orders</code></p>
+      </div>
+
+      <div class="order-receipt" id="order-receipt">
+        <!-- Injected dynamically -->
+      </div>
+
+      <button id="modal-close-btn" class="btn-primary" style="width: 100%; margin-top: 1.5rem;">
+        Continue Shopping
+      </button>
+    </div>
+  </div>
+  <div id="modal-backdrop" class="drawer-backdrop hidden"></div>
+
+  <!-- Footer -->
+  <footer class="page-footer">
+    <div class="footer-container">
+      <p class="footer-text">&copy; MiniStore Project. Beginner-friendly application for Docker &amp; Kubernetes practice.</p>
+      <div class="footer-links">
+        <span>No React</span>
+        <span>&middot;</span>
+        <span>No Node.js</span>
+        <span>&middot;</span>
+        <span>Pure Python &amp; PostgreSQL</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
